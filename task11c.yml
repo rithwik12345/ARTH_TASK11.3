@@ -1,0 +1,50 @@
+- name: "Webserver"
+  vars:
+  - datafolder: "/root/data"
+  hosts: task11c
+  tasks:
+  - name: "mounting cdrom to data folder"
+    mount:
+      path: "/root/data"
+      src: "/dev/cdrom"
+      fstype: iso9660
+      state: mounted      
+  - name: "repository for appstream"
+    yum_repository:
+      name: "yum1"
+      baseurl: "file:///root/data/AppStream"
+      description: "repo 1"
+      gpgcheck: no
+      state: present
+  - name: "repository for baseos"
+    yum_repository:
+      name: "yum2"
+      baseurl: "file:///root/data/BaseOS"
+      description: "repo 2"
+      gpgcheck: no
+      state: present
+  - name: "install httpd"
+    package:
+      name: "httpd"
+      state: present
+  - name: "creating new directory"
+    file:
+      state: directory
+      dest:  "/var/www/rithwik"
+  - name: "web server configuration file"
+    template:
+     dest: "/etc/httpd/conf.d/rithwik.conf"
+     src: "/root/webconf.conf"
+    notify: "service httpd"
+  - name: "copy web page from url"
+    get_url:
+      dest: "/var/www/rithwik"
+      url: "https://raw.githubusercontent.com/rithwik12345/HTML_TEST_CODE/master/index.html"    
+  handlers:
+  - name: "service httpd"
+    service:
+       name: "httpd"
+       state: restarted
+
+
+
